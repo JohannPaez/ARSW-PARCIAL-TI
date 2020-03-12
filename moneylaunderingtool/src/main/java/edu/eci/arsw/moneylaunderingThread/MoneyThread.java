@@ -22,11 +22,26 @@ public class MoneyThread extends Thread {
 	@Override
 	public void run() {
 		for(List<Transaction> t : transactions) {
-			for(Transaction transaction : t)
-            {
+			if (DetectionThread.pausa) {
+				try {
+					synchronized(this) {
+						wait();
+					}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			for(Transaction transaction : t) {
+				//System.out.println("ESTOY ACA");
 				ml.getTransactionAnalyzer().addTransaction(transaction);
             }
 			ml.getAmountOfFilesProcessed().incrementAndGet();
         }
+	}
+	
+	public synchronized void contine() {
+		notifyAll();
 	}
 }

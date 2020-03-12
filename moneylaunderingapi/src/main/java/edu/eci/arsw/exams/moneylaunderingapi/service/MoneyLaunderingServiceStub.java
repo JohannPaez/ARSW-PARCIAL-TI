@@ -6,6 +6,7 @@ import edu.eci.arsw.exams.moneylaunderingapi.model.SuspectAccount;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.stereotype.Component;
 
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component("MoneyLaunderingServiceStub")
 public class MoneyLaunderingServiceStub implements MoneyLaunderingService {
 	
-	ArrayList<SuspectAccount> sa = new ArrayList<SuspectAccount>();
+	private List<SuspectAccount> sa = new CopyOnWriteArrayList<>();
 	
     @Override
     public void updateAccountStatus(SuspectAccount suspectAccount) throws MoneyLaunderingNotFoundException {

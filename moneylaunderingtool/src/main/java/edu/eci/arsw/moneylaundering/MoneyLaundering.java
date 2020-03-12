@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import edu.eci.arsw.moneylaunderingThread.DetectionThread;
 import edu.eci.arsw.moneylaunderingThread.MoneyThread;
 
 public class MoneyLaundering
@@ -21,6 +22,9 @@ public class MoneyLaundering
     private int amountOfFilesTotal;
     private AtomicInteger amountOfFilesProcessed;
     private ArrayList<List<Transaction>> listaDeTransaccionesTotales;
+    private static DetectionThread detectionThread;
+    public static ArrayList<MoneyThread> threadList = new ArrayList<>();;
+    public static MoneyLaundering moneyLaundering;
 
     public MoneyLaundering()
     {
@@ -59,12 +63,11 @@ public class MoneyLaundering
            
         }
         
-        
+        System.out.println("Termino de leer archivos");
         int threads = 5;
         int num = amountOfFilesTotal / threads;
         int modulo = amountOfFilesTotal % threads;
-        int cont = 0;
-        ArrayList<MoneyThread> threadList = new ArrayList<>();
+        int cont = 0;    
         for (int i = 0; i < threads; i++) {
         	MoneyThread hilo = null;
         	ArrayList<List<Transaction>> transactionsPorHilo = new ArrayList<List<Transaction>>();
@@ -90,7 +93,10 @@ public class MoneyLaundering
         for (MoneyThread MT : threadList) {
 			MT.join();
 		}
-
+        
+        System.out.println("Finish");
+        detectionThread.finalizar();
+        System.out.println("Presione enter para finalizar:");
     }
 
     public List<String> getOffendingAccounts()
@@ -112,7 +118,10 @@ public class MoneyLaundering
 
     public static void main(String[] args)
     {
-        MoneyLaundering moneyLaundering = new MoneyLaundering();
+    	
+    	detectionThread = new DetectionThread();
+    	detectionThread.start();
+        moneyLaundering = new MoneyLaundering();
         Thread processingThread = new Thread(() -> {
 			try {
 				moneyLaundering.processTransactionData();
@@ -122,7 +131,7 @@ public class MoneyLaundering
 			}
 		});
         processingThread.start();
-        while(true)
+        /*while(true)
         {
             Scanner scanner = new Scanner(System.in);
             String line = scanner.nextLine();
@@ -133,8 +142,16 @@ public class MoneyLaundering
             String suspectAccounts = offendingAccounts.stream().reduce("", (s1, s2)-> s1 + "\n"+s2);
             message = String.format(message, moneyLaundering.amountOfFilesProcessed.get(), moneyLaundering.amountOfFilesTotal, offendingAccounts.size(), suspectAccounts);
             System.out.println(message);
-        }
+        }*/
 
+    }
+    
+    public static void notificar() {
+    	String message = "Processed %d out of %d files.\nFound %d suspect accounts:\n%s";
+        List<String> offendingAccounts = moneyLaundering.getOffendingAccounts();
+        String suspectAccounts = offendingAccounts.stream().reduce("", (s1, s2)-> s1 + "\n"+s2);
+        message = String.format(message, moneyLaundering.amountOfFilesProcessed.get(), moneyLaundering.amountOfFilesTotal, offendingAccounts.size(), suspectAccounts);
+        System.out.println(message);
     }
     
 
